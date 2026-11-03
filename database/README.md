@@ -24,6 +24,13 @@ only required extension. If a qualified TimescaleDB deployment exists, the
 documented conversion path and its trigger conditions are in
 [`qualification/TIMESCALE-ALTERNATIVE.md`](qualification/TIMESCALE-ALTERNATIVE.md).
 
+
+**Local fixture execution was verified on 21 October 2026** using a disposable,
+network-isolated PostgreSQL 17.5 / PostGIS 3.5.2 container. All four migrations,
+two fixture loads, the read-only qualification pack and the fixture regression
+suite passed. This verifies the local schema and fixture workflow; qualification
+against the actual DWRi hosting service and production data remains outstanding.
+
 **No existing or production database was accessed.** Full-schema query plans,
 view proofs and database-role grants remain pending execution under the
 qualification gate. WD-027's assignment-role migration passed a minimal-table
@@ -59,9 +66,15 @@ sections 2-3 on a disposable seeded database (below).
 | `migrations/V202610211200__WD-003_core_model.sql` | Core model: vocabulary, systems/groups, stations (UUID PK, PostGIS Point 4326, external-ID mapping, visibility, version), datastreams, device deployments, immutable monthly-partitioned originals with the `(stream_id, observed_time, source_event_id)` logical-key unique index, append-only revisions with optimistic version, rating curves/shifts, site visits/attachments, QC rules/results, assignments, audit events, transactional outbox |
 | `migrations/V202610211201__WD-003_publication_views.sql` | SELECT-only publication layer: `v_public_stations`, `v_public_station_summary` (explicit column lists; restricted fields absent by construction) and the empty `v_cohort_water_owners` stub |
 | `migrations/V202610211202__WD-003_roles.sql` | `neoserver_pub` / `app_read` / `app_write` / `app_migrate` role separation; migration operators alone hold DDL |
+
+| `migrations/V202610211203__WD-003_publication_lifecycle.sql` | Public views exclude proposed and retired stations, matching the application policy engine |
+| `qualification/queries.sql` | Read-only qualification pack (see above) |
+| `qualification/fixture-regressions.sql` | Disposable-only rollback suite for fixture mappings, repeatable loads, role isolation and all visibility/lifecycle combinations |
+
 | `migrations/V202610211203__WD-027_assignment_roles.sql` | Aligns assignment role CHECK with the runtime and wire contracts, including public and water-user; capability and approval rules are unchanged |
 | `qualification/queries.sql` | Read-only qualification pack (see above) |
 | `qualification/assignment-roles.sql` | WD-027 executable role-migration regression; creates a minimal table in a new disposable database |
+
 | `qualification/TIMESCALE-ALTERNATIVE.md` | TimescaleDB alternative record (ADR-05) |
 | `load-fixtures.mjs` | Zero-dependency deterministic fixture loader (stdout SQL) |
 | `check.mjs` + `package.json` | Static gate run by `pnpm test` inside `database/` |
@@ -78,8 +91,14 @@ catches strays as an alerting signal, not a data path).
 psql "<disposable-db>" -v ON_ERROR_STOP=1 -f database/migrations/V202610211200__WD-003_core_model.sql
 psql "<disposable-db>" -v ON_ERROR_STOP=1 -f database/migrations/V202610211201__WD-003_publication_views.sql
 psql "<disposable-db>" -v ON_ERROR_STOP=1 -f database/migrations/V202610211202__WD-003_roles.sql
+
+psql "<disposable-db>" -v ON_ERROR_STOP=1 -f database/migrations/V202610211203__WD-003_publication_lifecycle.sql
+
 psql "<disposable-db>" -v ON_ERROR_STOP=1 -f database/migrations/V202610211203__WD-027_assignment_roles.sql
+
 node database/load-fixtures.mjs | psql "<disposable-db>" -v ON_ERROR_STOP=1 -f -
+node database/load-fixtures.mjs | psql "<disposable-db>" -v ON_ERROR_STOP=1 -f -
+psql "<disposable-db>" -v ON_ERROR_STOP=1 -f database/qualification/fixture-regressions.sql
 ```
 
 The loader reads the WD-002 contract fixtures (`fixtures/contracts/*.json`),
@@ -88,6 +107,9 @@ idempotent SQL (stable row ordering, explicit columns, `ON CONFLICT DO
 NOTHING`). Record identifiers are UUIDv5 values derived from a fixed namespace
 (`9d1c0a44-6f7b-4a9e-8b2d-3c5f0e7a1b68`) and the fixture key, so a re-run
 converges; changing the namespace re-keys every derived identifier.
+Fixture vocabulary IDs and canonical units are explicitly mapped to database
+column names. Root systems load before subgroups to satisfy immediate foreign
+keys, and empty state-code arrays carry an explicit `text[]` type.
 `fixtures/database/expected-row-counts.json` pins the exact per-table counts
 (172 INSERTs across 21 seeded tables; 8 further tables exist with zero fixture
 rows).
