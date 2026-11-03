@@ -1,0 +1,18 @@
+# Dev image for apps/web (Vite SPA) — built by Cloud Build from repo root context.
+# NOT the qualified WD-024 runtime: this is the disposable dev deployment shape
+# (infra/runtime/README.md keeps production fail-closed until owner sign-off).
+
+# ---- build stage: install workspace, build the web app ----
+FROM node:22-alpine AS build
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+WORKDIR /repo
+RUN corepack enable
+COPY . .
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @utah-water/web run build
+
+# ---- serve stage: static files + SPA fallback on Cloud Run's $PORT ----
+FROM nginxinc/nginx-unprivileged:1.27-alpine
+COPY deploy/dev/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
+EXPOSE 8080
