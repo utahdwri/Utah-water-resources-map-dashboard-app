@@ -292,7 +292,8 @@
         "WD-012"
       ],
       "release": "R2",
-      "status": "in_progress"
+      "status": "completed",
+      "merged_commit": "5e38d17876d0adb5f93dc92a98ded965a5c9ed22"
     },
     {
       "id": "WD-018",
@@ -406,7 +407,8 @@
         "WD-022"
       ],
       "release": "Discovery",
-      "status": "planned"
+      "status": "completed",
+      "merged_commit": "0c38743f10678b23c08cb69c550e752ba872bc7d"
     },
     {
       "id": "WD-024",
@@ -457,7 +459,8 @@
         "WD-011"
       ],
       "release": "R2",
-      "status": "in_progress"
+      "status": "completed",
+      "merged_commit": "a5547004f6ee1c0181f7eb571d26dae2f264edec"
     },
     {
       "id": "WD-012-R2",
@@ -475,7 +478,8 @@
         "WD-012"
       ],
       "release": "R2",
-      "status": "in_progress"
+      "status": "completed",
+      "merged_commit": "ffe358ffbf6846a872ecce86b804c8541af725cb"
     },
     {
       "id": "WD-013-R2",
@@ -491,7 +495,8 @@
         "WD-011-R2"
       ],
       "release": "R2",
-      "status": "planned"
+      "status": "completed",
+      "merged_commit": "17d3404f6fca16dd77a686c5ef9ae77a4c497179"
     },
     {
       "id": "WD-023-R2",
@@ -509,7 +514,8 @@
         "WD-016"
       ],
       "release": "R2",
-      "status": "planned"
+      "status": "completed",
+      "merged_commit": "8c9272b9b4ed6ef9d57f51fd91ce09c26c873f03"
     },
     {
       "id": "WD-025-R2",
@@ -525,7 +531,8 @@
         "WD-011"
       ],
       "release": "R2",
-      "status": "planned"
+      "status": "completed",
+      "merged_commit": "63d395f6779e6aa1b5ede61db70cd6009e0d60c0"
     },
     {
       "id": "WD-026",
@@ -546,7 +553,48 @@
         "WD-025-R2"
       ],
       "release": "R2",
-      "status": "planned"
+      "status": "completed",
+      "merged_commit": "c9cebfa6868e8cab558326ae99a2e12c3d20060c"
+    },
+    {
+      "id": "WD-027",
+      "title": "Separate QC and approval permissions and align supplier role contracts",
+      "owner": "orchestrator",
+      "phase": "P4",
+      "release": "R2",
+      "status": "completed",
+      "depends_on": [
+        "WD-004",
+        "WD-013",
+        "WD-017",
+        "WD-025-R2"
+      ],
+      "write_scopes": [
+        "tasks.json",
+        "packages/policy/**",
+        "packages/contracts/**",
+        "fixtures/contracts/principals.json",
+        "fixtures/database/expected-row-counts.json",
+        "database/**",
+        "services/api/src/workflows/qc/**",
+        "services/api/src/workflows/revisions/**",
+        "services/api/src/workflows/stewardship/test/assignments.test.ts",
+        "services/api/src/workflows/rating-curves/**",
+        "services/api/src/workflows/accounting-snapshots/**",
+        "apps/web/src/features/operations/fixturePolicy.ts",
+        "apps/web/src/shell/data/fixtures/principals.json",
+        "apps/web/tests/fixturePermissions.test.ts",
+        "apps/web/src/features/rating-curves/**",
+        "apps/web/src/features/accounting-snapshots/**",
+        "tests/qualification/adversarial/policy-fuzz.test.mjs",
+        "tests/qualification-r2/adversarial/finalize-authority-fuzz.test.mjs",
+        "tests/qualification-r2/adversarial/cross-domain-freeze.test.mjs",
+        "tests/qualification-r2/adversarial/restricted-bytes-r2.test.mjs",
+        "docs/product/role-permission-amendment.md",
+        "docs/verification/role-permissions.md"
+      ],
+      "source": "User-authorized roadmap/persona alignment review, 2026-10-21; implements capability separation without resolving owner-specific grants.",
+      "merged_commit": "a6c7c835be2369820e2f843cc8754b8d2fca744e"
     }
   ]
 }

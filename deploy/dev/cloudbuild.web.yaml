@@ -1,0 +1,30 @@
+# Dev build for apps/web — manual dispatch from repo root:
+#   gcloud builds submit --config deploy/dev/cloudbuild.web.yaml .
+# Pushes to Artifact Registry; deploy step is a separate explicit command
+# (see deploy/dev/README.md). This is the DISPOSABLE dev pipeline only —
+# the qualified release path stays fail-closed per WD-024.
+# $SHORT_SHA is NOT populated for tarball uploads (only for trigger/Git
+# sources) — pass the sha explicitly:
+#   gcloud builds submit --config deploy/dev/cloudbuild.web.yaml \
+#     --substitutions=_IMAGE_TAG=$(git rev-parse --short HEAD) .
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - deploy/dev/Dockerfile.web
+      - -t
+      - us-west1-docker.pkg.dev/$PROJECT_ID/utah-water/web:dev-$_IMAGE_TAG
+      - -t
+      - us-west1-docker.pkg.dev/$PROJECT_ID/utah-water/web:dev
+      - .
+
+images:
+  - us-west1-docker.pkg.dev/$PROJECT_ID/utah-water/web:dev-$_IMAGE_TAG
+  - us-west1-docker.pkg.dev/$PROJECT_ID/utah-water/web:dev
+
+substitutions:
+  _IMAGE_TAG: 'local'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
